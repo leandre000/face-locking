@@ -1,120 +1,148 @@
-# Face Recognition with Real-time Tracking
+# 🔒 Face Locking System
 
-A real-time face recognition system with face locking capabilities, designed to identify and track specific individuals while monitoring their actions.
+![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
+![OpenCV](https://img.shields.io/badge/OpenCV-Computer%20Vision-green)
+![MediaPipe](https://img.shields.io/badge/MediaPipe-Face%20Mesh-orange)
+![License](https://img.shields.io/badge/License-MIT-yellow)
 
-## Core Features
-- **Face Recognition**: 
-  - Real-time face detection and identification
-  - Multi-person support
-  - High accuracy with ArcFace embeddings
+A high-performance **Real-time Face Recognition and Locking System** designed to identify enrolled individuals, track their movements, and log their actions with precision. Built with ArcFace for state-of-the-art recognition accuracy and MediaPipe for robust landmark tracking.
 
-- **Face Locking**:
-  - Track specific individuals in real-time
-  - Monitor head movements (left/right)
-  - Detect smiles and facial expressions
-  - Automatic action logging with timestamps
+## 🌟 Core Features
 
-## Setup
-1. **Install Dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-2. **Models**:
-   Ensure the following models are in the `models/` directory:
-   - `embedder_arcface.onnx` (ArcFace recognition)
-   - `face_landmarker.task` (MediaPipe FaceMesh)
+- **🎯 Real-Time Face Recognition**: Identify multiple individuals simultaneously with high accuracy using ArcFace embeddings.
+- **🔐 Face Locking**: Securely "lock" onto a specific target to track them exclusively, ignoring other faces.
+- **👀 Action Monitoring**:
+    - **Head Tracking**: Detects and logs left/right head movements.
+    - **Expression Analysis**: Real-time smile detection.
+    - **Activity Logging**: Timestamps every event (lock, unlock, movement, smile) to a persistent log file.
+- **⚡ High Performance**: Optimized for CPU inference, suitable for laptops and edge devices.
+- **📊 Analytics**: Built-in tools for evaluating model thresholds and visualizing embeddings.
 
-## Usage
+## 📂 Project Structure
 
-### 1. Enrollment
-Enroll new identities by capturing face samples from the camera.
+```
+face-locking/
+├── models/                  # Required model files (ArcFace ONNX, FaceMesh task)
+├── src/
+│   ├── align.py             # Face alignment using 5-point landmarks
+│   ├── camera.py            # Webcam stream handling
+│   ├── detect.py            # Face detection logic
+│   ├── embed.py             # Feature extraction (ArcFace)
+│   ├── enroll.py            # CLI tool for registering new users
+│   ├── evaluate.py          # Script to find optimal recognition thresholds
+│   ├── haar_5pt.py          # Visualization demo for landmarks
+│   ├── landmarks.py         # MediaPipe FaceMesh wrapper
+│   └── recognize.py         # Main application: Recognition & Locking
+├── logs/                    # Session logs saved here
+├── requirements.txt         # Python dependencies
+└── README.md                # Project documentation
+```
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Python 3.8** or higher
+- **Webcam** (Built-in or USB)
+
+### Installation
+
+1.  **Clone the repository** (if you haven't already):
+    ```bash
+    git clone https://github.com/leandre000/face-locking.git
+    cd face-locking
+    ```
+
+2.  **Install dependencies**:
+    It is recommended to use a virtual environment.
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+3.  **Download Models**:
+    Ensure the following files are present in the `models/` directory:
+    - `embedder_arcface.onnx`
+    - `face_landmarker.task`
+
+## 📖 Usage
+
+### 1. Enroll New Users
+Before the system can recognize anyone, you must enroll them.
+
 ```bash
 python -m src.enroll
 ```
-- **Controls**:
-  - `SPACE`: Capture a single sample.
-  - `a`: Toggle auto-capture.
-  - `s`: Save enrollment to database.
-  - `q`: Quit.
 
-### 2. Recognition
-Run real-time multi-face recognition with face locking and action tracking.
+**Controls:**
+- `SPACE`: Capture a photo of the face.
+- `a`: Toggle **Auto-Capture** mode (rapidly captures frames).
+- `s`: **Save** the enrolled profile and exit.
+- `q`: Quit without saving.
+
+### 2. Start Recognition & Locking
+Run the main application to start detecting and tracking faces.
+
 ```bash
 python -m src.recognize
 ```
-- **Controls**:
-  - `+/-`: Adjust distance threshold live.
-  - `r`: Reload database from disk.
-  - `d`: Toggle debug overlay.
-  - `l`: Lock/unlock the currently recognized face.
-  - `q`: Quit.
 
-#### Face Locking Features
-- Lock onto a specific person by pressing `l` when their face is detected
-- The system will track the locked face and log their actions
-- Actions include:
-  - Head movements (left/right)
-  - Smile detection
-  - Face locking/unlocking events
-- All actions are timestamped and saved to `logs/[Name]_history_[timestamp].txt`
+**System Controls:**
+- `l`: **Lock/Unlock** the currently detected face (Targeting Mode).
+- `+/-`: Increase/Decrease the recognition distance threshold.
+- `d`: Toggle **Debug Overlay** (shows landmarks and bounding boxes).
+- `r`: Reload the face database from disk.
+- `q`: Quit the application.
 
-### 3. Evaluation
-Evaluate the model's performance on enrolled crops and find the optimal threshold.
+**🔒 Face Locking Mode:**
+When you lock onto a face (press `l`), the system will:
+1.  Draw an **Orange** bounding box around the target.
+2.  Ignore all other faces.
+3.  Log specific actions (Head Turn Left/Right, Smiling) to a file in the `logs/` folder.
+
+### 3. Evaluation & Optimization
+To calculate the best distance threshold for your specific lighting and camera setup:
+
 ```bash
 python -m src.evaluate
 ```
 
-### 4. Demos
-Visualize embeddings or detection/landmarks:
-```bash
-python -m src.embed    # Embedding heatmap visualization
-python -m src.haar_5pt  # Detection and landmark visualization
+### 4. Visual Demos
+Explore the underlying technology with these visualization scripts:
+
+- **View 5-Point Landmarks**:
+  ```bash
+  python -m src.haar_5pt
+  ```
+- **Embedding Heatmap**:
+  ```bash
+  python -m src.embed
+  ```
+
+## 📝 Logs
+
+All tracking sessions are logged in the `logs/` directory with filenames in the format:
+`[Name]_history_[YYYYMMDDHHMMSS].txt`
+
+**Sample Log Entry:**
+```text
+2026-02-01 14:30:15.123 - FACE_LOCKED: Target acquired: Alex
+2026-02-01 14:30:22.456 - HEAD_RIGHT: User turned head right (35px)
+2026-02-01 14:30:25.789 - SMILE: Expression detected: Smile
 ```
 
-## Face Locking System
+## 🛠️ Troubleshooting
 
-### How Face Locking Works
-1. **Activation**: 
-   - Press 'l' when a recognized face is on screen
-   - The system will lock onto the closest recognized face
-   - A visual indicator (orange border) shows the locked face
+- **"No module named 'src'"**:
+  Make sure you are running the commands from the root `face-locking` directory using `python -m src.script_name`.
 
-2. **Tracking**:
-   - The system continues to track the locked face even if other faces appear
-   - If the face is temporarily lost, the system will try to reacquire it for 2 seconds
-   - The lock is automatically released if the face is not found after this period
+- **Camera not opening**:
+  Check if another application is using the webcam. You can change the camera index in `src/camera.py` (default is `0`).
 
-3. **Actions Detected**:
-   - **Head Movements**:
-     - Left/Right: Tracks horizontal head rotation
-     - Movement threshold: 10 pixels (adjustable)
-   - **Facial Expressions**:
-     - Smile detection: Measures mouth corner movement
-     - Smile threshold: Ratio > 1.1 (configurable)
-   - **System Events**:
-     - Face locked/unlocked
-     - Face lost/regained
+- **Low Accuracy**:
+  - Ensure good lighting during enrollment.
+  - Enroll multiple angles of the face.
+  - Run `src.evaluate` to tune the threshold.
 
-### History Files
-- **Location**: All logs are saved in the `logs/` directory
-- **Naming Convention**: `[Name]_history_[timestamp].txt`
-  - Example: `Bahati_history_20260131132049.txt`
-- **Log Format**:
-  ```
-  [YYYY-MM-DD HH:MM:SS.microseconds] - ACTION_TYPE: Description
-  ```
-- **Example Entries**:
-  ```
-  2026-01-31 13:20:11.324267 - FACE_LOCKED: Face locked: Bahati
-  2026-01-31 13:20:20.225528 - HEAD_RIGHT: Moved right by 31.9px
-  2026-01-31 13:20:21.684933 - SMILE: Smile detected (ratio: 14.97)
-  ```
-- **Log Management**:
-  - New log file created for each recognition session
-  - Timestamp in filename helps track different usage sessions
-  - Logs are automatically created when face locking is used
+## 📄 License
 
-### Technical Details
-- **Face Recognition**: Uses ArcFace for generating unique face embeddings
-- **Landmark Tracking**: MediaPipe FaceMesh tracks 5 key facial points
-- **Performance**: Optimized for real-time processing on CPU
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
